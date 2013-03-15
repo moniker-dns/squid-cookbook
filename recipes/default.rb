@@ -37,6 +37,7 @@ service "squid" do
   when "redhat","centos","scientific","fedora","suse","amazon"
     provider Chef::Provider::Service::Redhat
   when "debian","ubuntu"
+    service_name "squid3"
     provider Chef::Provider::Service::Upstart
   end
   action [ :enable, :start ]
@@ -56,6 +57,11 @@ template "/etc/squid/squid.conf" do
   source "squid#{version}.conf.erb"
   notifies :reload, "service[squid]"
   mode 00644
+
+  case node['platform']
+  when "debian","ubuntu"
+    path "/etc/squid3/squid.conf"
+  end
 end
 
 url_acl = []
@@ -90,8 +96,8 @@ begin
       acls.push [acl[1],group['id'],acl[0]]
     end
   end
-rescue
-  Chef::Log.info "no 'squid_acls' data bag"
+rescue => e
+  Chef::Log.info "no 'squid_acls' data bag #{e}"
 end
 
 template "/etc/squid/chef.acl.config" do
@@ -102,5 +108,10 @@ template "/etc/squid/chef.acl.config" do
     :url_acl => url_acl
     )
   notifies :reload, "service[squid]"
+
+  case node['platform']
+  when "debian","ubuntu"
+    path "/etc/squid3/chef.acl.config"
+  end
 end
 

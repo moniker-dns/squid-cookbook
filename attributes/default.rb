@@ -24,3 +24,8 @@ default['squid']['config_file'] = "/etc/squid/squid.conf"
 default['squid']['timeout'] = "10"
 default['squid']['opts'] = ""
 default['squid']['version'] = ""
+
+case node['platform']
+when "debian","ubuntu"
+  default['squid']['version'] = "31"
+end
